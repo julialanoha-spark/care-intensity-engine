@@ -1,0 +1,51 @@
+name,dosage,category,is_specialty
+Metformin,500mg,Diabetes,false
+Metformin,1000mg,Diabetes,false
+Insulin Glargine,100 units/mL,Diabetes,false
+Empagliflozin,10mg,Diabetes,false
+Lisinopril,10mg,Cardiovascular,false
+Metoprolol Succinate,25mg,Cardiovascular,false
+Amlodipine,5mg,Cardiovascular,false
+Atorvastatin,40mg,Cardiovascular,false
+Furosemide,40mg,Heart Failure,false
+Spironolactone,25mg,Heart Failure,false
+Carvedilol,6.25mg,Heart Failure,false
+Sacubitril/Valsartan,49/51mg,Heart Failure,false
+Warfarin,5mg,Anticoagulant,false
+Apixaban,5mg,Anticoagulant,false
+Rivaroxaban,20mg,Anticoagulant,false
+Darbepoetin Alfa,25mcg,ESRD/Hematologic,true
+Epoetin Alfa,10000 units,ESRD/Hematologic,true
+Sevelamer,800mg,ESRD,false
+Cinacalcet,30mg,ESRD,true
+Paricalcitol,1mcg,ESRD,false
+Tacrolimus,1mg,Transplant,true
+Mycophenolate,500mg,Transplant,true
+Prednisone,5mg,Transplant/Autoimmune,false
+Lenalidomide,25mg,Oncology,true
+Bortezomib,3.5mg,Oncology,true
+Ibrutinib,420mg,Oncology/Hematologic,true
+Rituximab,100mg/10mL,Oncology/Hematologic,true
+Pembrolizumab,100mg/4mL,Oncology,true
+Capecitabine,500mg,Oncology,true
+Emtricitabine/Tenofovir,200/300mg,HIV,true
+Dolutegravir,50mg,HIV,true
+Bictegravir/Emtricitabine/Tenofovir,50/200/25mg,HIV,true
+Donepezil,10mg,Dementia,false
+Memantine,10mg,Dementia,false
+Rivastigmine,9.5mg/24hr,Dementia,false
+Sertraline,50mg,Mental Health,false
+Quetiapine,100mg,Mental Health,false
+Aripiprazole,10mg,Mental Health,false
+Tiotropium,18mcg,Pulmonary,false
+Fluticasone/Salmeterol,250/50mcg,Pulmonary,false
+Nintedanib,150mg,Pulmonary,true
+Tofacitinib,5mg,Autoimmune,true
+Adalimumab,40mg/0.8mL,Autoimmune,true
+Gabapentin,300mg,Neurologic,false
+Levetiracetam,500mg,Neurologic,false
+Hydroxyurea,500mg,Hematologic,true
+Pantoprazole,40mg,Gastrointestinal,false
+Omeprazole,20mg,Gastrointestinal,false
+Levothyroxine,50mcg,Endocrine,false
+Allopurinol,300mg,Gout/Renal,false
