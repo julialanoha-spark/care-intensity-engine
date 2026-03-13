@@ -166,7 +166,7 @@ def _provider_score(provider_ids: list[int]) -> tuple[int, list[str]]:
     if not provider_ids:
         return 0, []
 
-    providers = Provider.objects.filter(id__in=provider_ids)
+    providers = list(Provider.objects.filter(id__in=provider_ids))
 
     # Deduplicate by specialty — highest score wins per specialty
     specialty_best: dict[str, int] = {}
@@ -177,8 +177,13 @@ def _provider_score(provider_ids: list[int]) -> tuple[int, list[str]]:
             specialty_best[specialty_key] = provider.specialty_score
 
     total = sum(specialty_best.values())
-    specialty_tiers = list(specialty_best.keys())
-    return min(total, CAP_PROVIDERS), specialty_tiers
+
+    # Return ALL unique specialties for display (not just scored ones — base-tier
+    # providers like primary care still deserve to appear in the breakdown)
+    all_specialties = list(dict.fromkeys(
+        p.specialty.lower().strip() for p in providers
+    ))
+    return min(total, CAP_PROVIDERS), all_specialties
 
 
 def _medication_score(medication_ids: list[int]) -> tuple[int, int, bool, bool]:

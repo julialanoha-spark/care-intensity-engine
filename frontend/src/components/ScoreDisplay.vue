@@ -129,10 +129,13 @@ const inputRows = computed(() => {
     ? r.condition_names.join(', ')
     : 'Not entered'
 
-  // Providers
-  const provDetail = r.specialty_tiers?.length
-    ? r.specialty_tiers.map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ')
-    : 'Not entered'
+  // Providers — specialty_tiers now includes all entered specialties (scored + base tier)
+  let provDetail = 'Not entered'
+  if (c.providers) {
+    provDetail = r.specialty_tiers?.length
+      ? r.specialty_tiers.map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ')
+      : 'Provider entered'
+  }
 
   // Medications
   let medDetail = 'Not entered'

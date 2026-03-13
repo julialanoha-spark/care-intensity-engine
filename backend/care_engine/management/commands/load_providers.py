@@ -91,7 +91,6 @@ SPECIALTY_MAP = {
     'geriatric medicine':                      ('base', 0),
     'geriatrician':                            ('base', 0),
     'pediatrics':                              ('base', 0),
-    'obstetrics & gynecology':                 ('base', 0),
     # Everything else → low (2 pts) via the default fallback in handle()
 }
 
