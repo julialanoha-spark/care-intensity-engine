@@ -1,10 +1,13 @@
 <template>
   <div class="section" v-if="topics.length > 0">
-    <h3 class="section-title">Plan Areas to Discuss</h3>
+    <div class="section-header">
+      <span class="section-label">Plan Areas to Discuss</span>
+      <span class="count-chip">{{ topics.length }}</span>
+    </div>
 
     <div v-for="(group, category) in grouped" :key="category" class="topic-group">
-      <div class="category-header">
-        <span :class="['category-icon', categoryIcon(category)]"></span>
+      <div :class="['category-header', `cat-${categoryKey(category)}`]">
+        <span class="cat-accent"></span>
         {{ category }}
       </div>
       <ul class="topic-list">
@@ -22,7 +25,6 @@ import { computed } from 'vue'
 import { useBeneficiaryStore } from '../stores/beneficiary'
 
 const store = useBeneficiaryStore()
-
 const topics = computed(() => store.scoreResult?.discussion_topics || [])
 
 const grouped = computed(() => {
@@ -34,47 +36,102 @@ const grouped = computed(() => {
   return result
 })
 
-function categoryIcon(category) {
-  const map = {
-    'Prescription Drug Coverage': 'icon-pill',
-    'Provider Network': 'icon-doctor',
-    'Care Management': 'icon-heart',
-    'Supplemental Benefits': 'icon-star',
-    'Cost Protection': 'icon-shield',
-  }
-  return map[category] || 'icon-default'
+const CATEGORY_KEYS = {
+  'Prescription Drug Coverage': 'drug',
+  'Provider Network':           'network',
+  'Care Management':            'care',
+  'Supplemental Benefits':      'supp',
+  'Cost Protection':            'cost',
 }
+function categoryKey(cat) { return CATEGORY_KEYS[cat] || 'default' }
 </script>
 
 <style scoped>
 .section {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 16px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
-.section-title {
-  font-size: 13px;
+
+.section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #6b7280;
-  margin: 0 0 14px;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
 }
-.topic-group { margin-bottom: 14px; }
-.category-header {
-  font-size: 12px;
+.count-chip {
+  font-family: var(--font-mono);
+  font-size: 9px;
   font-weight: 700;
-  color: #1e40af;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 6px;
-  padding-bottom: 4px;
-  border-bottom: 2px solid #dbeafe;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: var(--teal-dim);
+  color: var(--teal);
+  border: 1px solid rgba(45,212,191,0.2);
 }
-.topic-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
-.topic-item { padding: 8px 10px; background: #f9fafb; border-radius: 6px; border-left: 3px solid #3b82f6; }
-.topic-name { font-size: 13px; font-weight: 600; color: #111827; margin-bottom: 3px; }
-.topic-reason { font-size: 12px; color: #6b7280; line-height: 1.5; }
+
+.topic-group { margin-bottom: 14px; }
+.topic-group:last-child { margin-bottom: 0; }
+
+.category-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+}
+
+.cat-accent {
+  display: inline-block;
+  width: 3px;
+  height: 12px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* Category accent colors */
+.cat-drug     { color: #c084fc; }
+.cat-drug     .cat-accent { background: #c084fc; }
+.cat-network  { color: #60a5fa; }
+.cat-network  .cat-accent { background: #60a5fa; }
+.cat-care     { color: #34d399; }
+.cat-care     .cat-accent { background: #34d399; }
+.cat-supp     { color: #fbbf24; }
+.cat-supp     .cat-accent { background: #fbbf24; }
+.cat-cost     { color: #fb923c; }
+.cat-cost     .cat-accent { background: #fb923c; }
+.cat-default  { color: var(--teal); }
+.cat-default  .cat-accent { background: var(--teal); }
+
+.topic-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.topic-item {
+  padding: 9px 12px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-sm);
+  border-left: 2px solid var(--border-bright);
+  transition: border-color 0.15s;
+}
+.topic-item:hover { border-left-color: var(--teal); }
+.topic-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+}
+.topic-reason {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
 </style>

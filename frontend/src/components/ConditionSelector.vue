@@ -1,51 +1,45 @@
 <template>
   <div class="section">
-    <h3 class="section-title">Chronic Conditions</h3>
+    <div class="section-header">
+      <span class="section-label">Chronic Conditions</span>
+      <span v-if="selectedCount > 0" class="count-chip">{{ selectedCount }}</span>
+    </div>
 
     <div v-if="loading" class="loading">Loading…</div>
 
-    <ul v-else class="condition-list">
-      <li
+    <div v-else class="conditions-grid">
+      <button
         v-for="condition in conditions"
         :key="condition.id"
-        class="condition-item"
+        :class="['condition-pill', `tier-${condition.tier}`, { selected: isSelected(condition.id) }]"
+        @click="store.toggleCondition(condition.id)"
       >
-        <label class="condition-row">
-          <input
-            type="checkbox"
-            class="checkbox"
-            :checked="store.selectedConditionIds.includes(condition.id)"
-            @change="store.toggleCondition(condition.id)"
-          />
-          <span class="condition-name">{{ condition.name }}</span>
-          <span :class="['tier-badge', `tier-${condition.tier}`]">
-            {{ tierLabel(condition.tier) }}
-          </span>
-        </label>
+        <span :class="['tier-dot', `dot-${condition.tier}`]"></span>
+        <span class="pill-name">{{ condition.name }}</span>
+      </button>
+    </div>
 
-        <!-- Cancer severity toggle -->
-        <div
-          v-if="isCancer(condition) && store.selectedConditionIds.includes(condition.id)"
-          class="severity-panel"
-        >
-          <span class="severity-label">Severity:</span>
+    <!-- Cancer severity -->
+    <transition name="fade-down">
+      <div v-if="cancerSelected" class="severity-panel">
+        <span class="severity-label">Cancer severity</span>
+        <div class="severity-options">
           <button
             v-for="opt in severityOptions"
             :key="opt.value"
             :class="['severity-btn', { active: store.cancerSeverity === opt.value }]"
             @click="store.cancerSeverity = opt.value"
           >
-            {{ opt.label }}
-            <span class="severity-pts">{{ opt.pts }}</span>
+            <span class="sev-label">{{ opt.label }}</span>
           </button>
         </div>
-      </li>
-    </ul>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useBeneficiaryStore } from '../stores/beneficiary'
 import { fetchConditions } from '../api/careEngine'
 
@@ -54,18 +48,14 @@ const conditions = ref([])
 const loading = ref(true)
 
 const severityOptions = [
-  { value: 'active', label: 'Active / Metastatic', pts: '14 pts' },
-  { value: 'managed', label: 'History / Managed', pts: '7 pts' },
-  { value: 'unspecified', label: 'Unspecified', pts: '10 pts' },
+  { value: 'active',      label: 'Active / Metastatic' },
+  { value: 'managed',     label: 'History / Managed'   },
+  { value: 'unspecified', label: 'Unspecified'          },
 ]
 
-function isCancer(condition) {
-  return condition.name === 'Cancer'
-}
-
-function tierLabel(tier) {
-  return { high: 'High', medium: 'Medium', low: 'Low' }[tier] || tier
-}
+const isSelected   = id => store.selectedConditionIds.includes(id)
+const selectedCount = computed(() => store.selectedConditionIds.length)
+const cancerSelected = computed(() => store.hasCancer)
 
 onMounted(async () => {
   try {
@@ -80,74 +70,135 @@ onMounted(async () => {
 
 <style scoped>
 .section {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 16px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 8px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 12px;
 }
-.section-title {
-  font-size: 13px;
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #6b7280;
-  margin: 0 0 12px;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
 }
-.loading { color: #9ca3af; font-size: 14px; }
-.condition-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 2px; }
-.condition-item { border-radius: 6px; overflow: hidden; }
-.condition-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 6px;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: background 0.1s;
-}
-.condition-row:hover { background: #f9fafb; }
-.checkbox { width: 16px; height: 16px; accent-color: #1e40af; cursor: pointer; flex-shrink: 0; }
-.condition-name { flex: 1; font-size: 14px; color: #111827; }
-.tier-badge {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 6px;
+.count-chip {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 7px;
   border-radius: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  background: var(--teal-dim);
+  color: var(--teal);
+  border: 1px solid rgba(45,212,191,0.2);
 }
-.tier-high { background: #fee2e2; color: #991b1b; }
-.tier-medium { background: #fef3c7; color: #92400e; }
-.tier-low { background: #d1fae5; color: #065f46; }
 
-.severity-panel {
+.loading { font-size: 12px; color: var(--text-muted); }
+
+.conditions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+
+.condition-pill {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 6px 8px 30px;
-  flex-wrap: wrap;
+  gap: 7px;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+  font-family: var(--font-ui);
 }
-.severity-label { font-size: 12px; color: #6b7280; font-weight: 500; }
+.condition-pill:hover {
+  border-color: var(--border-bright);
+  background: var(--bg-hover);
+}
+
+/* Tier-based selected states */
+.condition-pill.tier-high.selected  { background: rgba(248,113,113,0.08); border-color: rgba(248,113,113,0.35); }
+.condition-pill.tier-medium.selected { background: rgba(251,191,36,0.08); border-color: rgba(251,191,36,0.30); }
+.condition-pill.tier-low.selected   { background: rgba(52,211,153,0.08); border-color: rgba(52,211,153,0.30); }
+
+.tier-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dot-high   { background: var(--very-high); box-shadow: 0 0 4px rgba(248,113,113,0.5); }
+.dot-medium { background: var(--moderate);  box-shadow: 0 0 4px rgba(251,191,36,0.4); }
+.dot-low    { background: var(--low);       box-shadow: 0 0 4px rgba(52,211,153,0.4); }
+
+.pill-name {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.3;
+  flex: 1;
+}
+.condition-pill.selected .pill-name { color: var(--text-primary); }
+
+/* Severity panel */
+.severity-panel {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba(248,113,113,0.05);
+  border: 1px solid rgba(248,113,113,0.2);
+  border-radius: var(--radius-sm);
+}
+.severity-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--very-high);
+  display: block;
+  margin-bottom: 8px;
+}
+.severity-options { display: flex; gap: 5px; flex-wrap: wrap; }
 .severity-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border: 1px solid #d1d5db;
+  gap: 5px;
+  padding: 5px 10px;
+  border: 1px solid var(--border-bright);
   border-radius: 20px;
-  background: white;
-  font-size: 12px;
+  background: var(--bg-surface);
   cursor: pointer;
   transition: all 0.15s;
+  font-family: var(--font-ui);
 }
+.severity-btn:hover { border-color: var(--very-high); }
 .severity-btn.active {
-  background: #1e40af;
-  color: white;
-  border-color: #1e40af;
+  background: rgba(248,113,113,0.12);
+  border-color: var(--very-high);
 }
-.severity-pts {
-  font-size: 11px;
-  opacity: 0.7;
+.sev-label { font-size: 11px; color: var(--text-secondary); }
+.severity-btn.active .sev-label { color: var(--very-high); }
+.sev-pts {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
 }
+.severity-btn.active .sev-pts { color: rgba(248,113,113,0.7); }
+
+/* Transition */
+.fade-down-enter-active { transition: all 0.2s ease; }
+.fade-down-leave-active { transition: all 0.15s ease; }
+.fade-down-enter-from   { opacity: 0; transform: translateY(-6px); }
+.fade-down-leave-to     { opacity: 0; transform: translateY(-4px); }
 </style>

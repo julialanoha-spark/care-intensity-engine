@@ -64,7 +64,46 @@ def calculate_score(
     interaction_score, interactions_triggered = _interaction_score(condition_names)
 
     raw_total = demographic_score + condition_score + provider_score + medication_score + interaction_score
-    total_score = min(raw_total, CAP_TOTAL)
+
+    # --- Partial-data normalization ---
+    # Determine which components have substantive data
+    demo_has_data = not demographic_missing          # age AND sex are known
+    conditions_have_data = len(condition_ids) > 0
+    providers_have_data = len(provider_ids) > 0
+    meds_have_data = len(medication_ids) > 0
+
+    # At least one "primary" component (conditions or medications) must be present
+    # to produce a meaningful score. Demographics alone aren't enough.
+    primary_has_data = conditions_have_data or meds_have_data
+
+    if primary_has_data:
+        filled_max = 0
+        if conditions_have_data:
+            filled_max += CAP_CONDITIONS                          # 35
+            if len(condition_ids) >= 2:
+                filled_max += CAP_INTERACTIONS                    # +10 only if interactions can fire
+        # Providers and medications are additive complexity signals — they increase
+        # the numerator but do not expand the denominator when a condition
+        # baseline exists (adding them should never lower the score).
+        # Medications stay in the denominator only when serving as the sole
+        # primary data source (no conditions), to prevent a zero denominator.
+        if meds_have_data and not conditions_have_data:
+            filled_max += CAP_MEDICATIONS                    # 25
+        # Demographics included in filled_max only when primary data is present
+        if demo_has_data:
+            filled_max += CAP_DEMOGRAPHIC                    # 15
+        total_score = min(round(raw_total / filled_max * 100), CAP_TOTAL)
+    else:
+        filled_max = 0
+        total_score = 0
+
+    completeness = {
+        'demographics': demo_has_data,
+        'conditions': conditions_have_data,
+        'providers': providers_have_data,
+        'medications': meds_have_data,
+        'filled_max': filled_max,
+    }
 
     return {
         'total_score': total_score,
@@ -81,12 +120,14 @@ def calculate_score(
             'demographic_data_missing': demographic_missing,
             'medication_data_missing': medication_missing,
         },
+        'completeness': completeness,
         # Pass through for discussion topics and LLM narrative
         '_condition_names': condition_names,
         '_cancer_severity': cancer_severity,
         '_specialty_tiers': specialty_tiers,
         '_med_count': med_count,
         '_has_specialty_drug': has_specialty_drug,
+        '_medicaid_dual': medicaid_dual,
     }
 
 

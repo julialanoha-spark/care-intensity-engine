@@ -86,4 +86,4 @@ CORS_ALLOWED_ORIGINS = config(
     cast=Csv(),
 )
 
-ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')
+OPENAI_API_KEY = config('OPENAI_API_KEY', default='')

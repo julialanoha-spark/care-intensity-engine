@@ -52,3 +52,7 @@ class ScoreRequestSerializer(serializers.Serializer):
         required=False,
         default=list,
     )
+    # Optional: selected plan for plan-specific talking points
+    plan_contract_id = serializers.CharField(required=False, allow_blank=True, default='')
+    plan_plan_id     = serializers.CharField(required=False, allow_blank=True, default='')
+    plan_segment_id  = serializers.CharField(required=False, allow_blank=True, default='')

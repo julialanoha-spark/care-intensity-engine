@@ -17,15 +17,45 @@ Source document: `CY 2024 AN_FINAL_20230131.pdf`
 ## Score Architecture
 
 ```
-Total Score (0–100) = Component 1 + Component 2 + Component 3 + Component 4 + Component 5
-                    = Demographic Base (0-15)
-                    + Chronic Conditions (0-35)
-                    + Provider Complexity (0-25)
-                    + Medication Burden (0-25)
-                    + Comorbidity Interactions (0-10)
+Total Score (0–100) = normalize(Component 1 + Component 2 + Component 3 + Component 4 + Component 5)
 
-Theoretical max: 110 → capped at min(total, 100)
+Components:
+  Demographic Base      (0-15)
+  Chronic Conditions    (0-35)
+  Provider Complexity   (0-25)
+  Medication Burden     (0-25)
+  Comorbidity Interactions (0-10)
+
+Theoretical max: 110
 ```
+
+### Partial-Data Normalization
+
+When only some components have data, the raw sum is normalized to the maximum
+achievable from the filled components:
+
+```
+filled_max = sum of caps for components with data
+total_score = min(round(raw_total / filled_max × 100), 100)
+```
+
+**Inclusion rules:**
+- Conditions + Interactions (max 45): included if any condition is selected
+- Providers (max 25): included if any provider is selected
+- Medications (max 25): included if any medication is selected
+- Demographics (max 15): included only when a primary component (conditions or meds)
+  is also present AND age+sex are known
+
+**Rationale**: Scoring relative to what's been assessed prevents artificially low scores
+from depressing the intensity level before the call profile is complete. A beneficiary
+with Heart Failure (12 pts) alone scores 27/100 (Moderate) rather than 12/100 (Low).
+As more components are filled, the score converges toward the true absolute value.
+
+**Note on score drift (resolved 2026-03-13)**: Providers and medications no longer
+expand the `filled_max` denominator when a condition baseline is present. Both act
+as pure additive bonuses — adding more care data can only increase or maintain the
+score. Medications remain in the denominator only when they are the sole primary
+data source (no conditions entered), to avoid a zero denominator.
 
 ### Intensity Thresholds
 
@@ -189,6 +219,8 @@ Multiple pairs can trigger simultaneously and stack up to the cap.
 
 | Date | Change | Rationale |
 |---|---|---|
+| 2026-03-13 | Removed providers and medications (when conditions present) from `filled_max` denominator in `scoring.py` | Adding low-scoring providers (PCPs, low-tier specialists) or generic medications was causing the normalized score to drop due to denominator expansion exceeding numerator contribution. Providers and medications are now treated as additive complexity signals — they can only increase the score, never decrease it. |
+| 2026-03-10 | Added filled_max normalization for partial data | Score reflects complexity relative to assessed components; prevents artificial Low ratings when profile is incomplete |
 | 2026-03-10 | Initial weights set for MVP | Based on CMS-HCC V28 conceptual alignment |
 | 2026-03-10 | Medication buckets calibrated to Spark data | n=29,347 distribution analysis |
 | 2026-03-10 | Added demographic component (age+sex+Medicaid) | CMS-HCC V28 demographic factors |
